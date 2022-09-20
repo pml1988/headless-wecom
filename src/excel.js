@@ -1,7 +1,20 @@
 const fs = require('fs');
 const xlsx = require('node-xlsx');
 
-exports.exportExcel = (users) => {
+function getDepartmentIds(text = '', departments = {}) {
+  return text
+    .split('\n')
+    .map((line) =>
+      line
+        .trim()
+        .split('/')
+        .map((t) => departments[t] || '未知ID')
+        .join('/')
+    )
+    .join(' \n');
+}
+
+exports.exportExcel = (users, departments) => {
   const data = users.map((user) => [
     null,
     user.externalId ?? null,
@@ -25,7 +38,8 @@ exports.exportExcel = (users) => {
     null,
     '否',
     user.departments ?? null,
-    user.department_leader ? '是' : '否'
+    user.department_leader ? '是' : '否',
+    getDepartmentIds(user.departments, departments)
   ]);
   data.unshift([
     '昵称',
@@ -49,7 +63,8 @@ exports.exportExcel = (users) => {
     '上次登录时间',
     '账号是否被禁用',
     '部门',
-    '是否为部门 Leader'
+    '是否为部门 Leader',
+    '部门 ID'
   ]);
   const buffer = xlsx.build([{ name: 'mySheetName', data }]);
   fs.writeFileSync('output.xlsx', buffer, { flag: 'w' });

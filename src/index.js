@@ -1,6 +1,12 @@
 const puppeteer = require('puppeteer');
 const { exportExcel } = require('./excel');
 
+function sleep(interval) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, interval);
+  });
+}
+
 const main = async () => {
   const browser = await puppeteer.launch({
     // executablePath: '/usr/bin/chromium-browser',
@@ -28,10 +34,37 @@ const main = async () => {
 
   await page.click('#menu_contacts');
   console.log('进入通讯录页面');
+  console.log('获取所有部门 id');
   await page.waitForSelector('.member_colRight', { timeout: 1e9 });
   await page.waitForTimeout(200);
-
-  // 判断页数
+  // 获取部门 id
+  // 展开所有部门，以及子部门
+  for (;;) {
+    const anchors = await page.$$(
+      '.member_colLeft_bottom .jstree-1 .jstree-closed'
+    );
+    if (anchors.length === 0) {
+      break;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const anchor of anchors) {
+      await anchor.click();
+      await anchor.click();
+    }
+    await sleep(300);
+  }
+  const departsArr = await page.$$eval(
+    '.member_colLeft_bottom .jstree-1 .jstree-anchor',
+    (anchors) => {
+      return anchors.map((anchor) => [
+        anchor.innerText,
+        anchor.getAttribute('id').replace('_anchor', '')
+      ]);
+    }
+  );
+  const departs = Object.fromEntries(departsArr);
+  console.log(`获取所有 ${departsArr.length} 部门 id 完成`);
+  // // 判断页数
   const pages = await page.evaluate(() => {
     // eslint-disable-next-line no-undef
     const text = document.querySelector('.ww_pageNav_info_text')?.innerText;
@@ -129,7 +162,7 @@ const main = async () => {
     }
   }
 
-  exportExcel(users);
+  exportExcel(users, departs);
   process.exit(0);
 };
 
