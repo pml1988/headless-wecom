@@ -36,7 +36,7 @@ const main = async () => {
   console.log('进入通讯录页面');
   console.log('获取所有部门 id');
   await page.waitForSelector('.member_colRight', { timeout: 1e9 });
-  await page.waitForTimeout(200);
+  await sleep(200);
   // 获取部门 id
   // 展开所有部门，以及子部门
   for (;;) {
@@ -51,7 +51,7 @@ const main = async () => {
       await anchor.click();
       await anchor.click();
     }
-    await sleep(300);
+    await sleep(200);
   }
   const departsArr = await page.$$eval(
     '.member_colLeft_bottom .jstree-1 .jstree-anchor',
@@ -64,7 +64,10 @@ const main = async () => {
   );
   const departs = Object.fromEntries(departsArr);
   console.log(`获取所有 ${departsArr.length} 部门 id 完成`);
-  // // 判断页数
+  await page.click('#menu_contacts');
+  await sleep(200);
+
+  // 判断页数
   const pages = await page.evaluate(() => {
     // eslint-disable-next-line no-undef
     const text = document.querySelector('.ww_pageNav_info_text')?.innerText;
@@ -148,17 +151,18 @@ const main = async () => {
       user.department_leader = department_leader;
 
       users.push(user);
+      await sleep(200);
+      await page.waitForTimeout(200);
       // 返回
       await page.click('.ww_btn_Back');
       await page.waitForSelector('.member_colRight', { timeout: 1e9 });
-      await page.waitForTimeout(200);
     }
     // 下一页
     if (p < pages) {
       console.log('进入下一页');
       await page.click('.js_next_page');
       await page.waitForSelector('.member_colRight', { timeout: 1e9 });
-      await page.waitForTimeout(200);
+      await sleep(200);
     }
   }
 

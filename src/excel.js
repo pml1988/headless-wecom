@@ -16,7 +16,7 @@ function getDepartmentIds(text = '', departments = {}) {
 
 exports.exportExcel = (users, departments) => {
   const data = users.map((user) => [
-    null,
+    user.name,
     user.externalId ?? null,
     user.email ?? null,
     user.email ? '是' : '否',
