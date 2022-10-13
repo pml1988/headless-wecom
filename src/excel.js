@@ -14,58 +14,142 @@ function getDepartmentIds(text = '', departments = {}) {
     .join(' \n');
 }
 
-exports.exportExcel = (users, departments) => {
+const fields = [
+  {
+    key: 'name',
+    label: '姓名',
+    label_en: 'Name',
+    example: ''
+  },
+  {
+    key: 'phoneCountryCode',
+    label: '手机地区号',
+    label_en: 'phoneCountryCode',
+    example: ''
+  },
+  {
+    key: 'phone',
+    label: '手机号',
+    label_en: 'phone',
+    example: ''
+  },
+  {
+    key: 'email',
+    label: '邮箱',
+    label_en: 'email',
+    example: ''
+  },
+  {
+    key: 'username',
+    label: '用户名',
+    label_en: 'username',
+    example: ''
+  },
+  {
+    key: 'password',
+    label: '密码',
+    label_en: 'password',
+    example: ''
+  },
+  {
+    key: 'org',
+    label: '所属部门',
+    label_en: 'org',
+    example: ''
+  },
+  {
+    key: 'mainDepartment',
+    label: '负责部门',
+    label_en: 'mainDepartment',
+    example: ''
+  },
+  {
+    key: 'externalId',
+    label: '原系统 ID（externalId)',
+    label_en: 'externalId',
+    example: ''
+  },
+  {
+    key: 'gender',
+    label: '性别',
+    label_en: 'gender',
+    example: ''
+  },
+  {
+    key: 'country',
+    label: '国家',
+    label_en: 'country',
+    example: ''
+  },
+  {
+    key: 'province',
+    label: '省份',
+    label_en: 'province',
+    example: ''
+  },
+  {
+    key: 'city',
+    label: '城市',
+    label_en: 'city',
+    example: ''
+  },
+  {
+    key: 'isLocked',
+    label: '是否锁定账户',
+    label_en: 'isLocked',
+    example: ''
+  }
+].map((x) => x.label);
+
+exports.exportExcel = (users) => {
   const data = users.map((user) => [
     user.name,
-    user.externalId ?? null,
-    user.email ?? null,
-    user.email ? '是' : '否',
+    user.phone ? '+86' : null,
     user.phone ?? null,
+    user.email ?? null,
+    user.name,
     null,
-    null,
-    null,
-    'basic:import-excel',
-    null,
-    0,
-    null,
-    user.gender ?? 'U',
-    null,
-    null,
-    null,
-    null,
-    // 注册时间
-    null,
-    null,
-    '否',
     user.departments ?? null,
-    user.department_leader ? '是' : '否',
-    getDepartmentIds(user.departments, departments)
+    user.department_leader ? user.departments : null,
+    user.externalId ?? null,
+    user.gender ?? null,
+    null,
+    null,
+    null,
+    '否'
   ]);
-  data.unshift([
-    '昵称',
-    '用户名',
-    '邮箱',
-    '邮箱是否验证',
-    '手机号',
-    'unionid',
-    'openid',
-    '密码',
-    '注册方式',
-    '公司',
-    '登录次数',
-    '最近登录 IP',
-    '性别',
-    '国家',
-    '省份',
-    '城市',
-    '地址',
-    '注册时间',
-    '上次登录时间',
-    '账号是否被禁用',
-    '部门',
-    '是否为部门 Leader',
-    '部门 ID'
+  data.unshift(
+    [
+      `填写须知：
+  请勿修改表格结构；直接上传该文件。`
+    ],
+    ...Array(13).fill([]),
+    fields
+  );
+  const buffer = xlsx.build([
+    {
+      name: 'mySheetName',
+      data,
+      options: {
+        '!cols': Array(fields.length).fill({ wpx: 80 }),
+        '!merges': [
+          {
+            s: { c: 0, r: 0 },
+            e: { c: 16, r: 13 }
+          }
+        ]
+        // A1: {
+        //   s: {
+        //     alignment: {
+        //       wrapText: true, // 自动换行
+        //       vertical: 'top', // 文字置顶
+        //       horizontal: 'left' // 文字向左对齐
+        //     }
+        //   }
+        // }
+      }
+    }
   ]);
-  const buffer = xlsx.build([{ name: 'mySheetName', data }]);
+
   fs.writeFileSync('output.xlsx', buffer, { flag: 'w' });
 };

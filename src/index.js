@@ -39,31 +39,31 @@ const main = async () => {
   await sleep(200);
   // 获取部门 id
   // 展开所有部门，以及子部门
-  for (;;) {
-    const anchors = await page.$$(
-      '.member_colLeft_bottom .jstree-1 .jstree-closed'
-    );
-    if (anchors.length === 0) {
-      break;
-    }
-    // eslint-disable-next-line no-restricted-syntax
-    for (const anchor of anchors) {
-      await anchor.click();
-      await anchor.click();
-    }
-    await sleep(200);
-  }
-  const departsArr = await page.$$eval(
-    '.member_colLeft_bottom .jstree-1 .jstree-anchor',
-    (anchors) => {
-      return anchors.map((anchor) => [
-        anchor.innerText,
-        anchor.getAttribute('id').replace('_anchor', '')
-      ]);
-    }
-  );
-  const departs = Object.fromEntries(departsArr);
-  console.log(`获取所有 ${departsArr.length} 部门 id 完成`);
+  // for (;;) {
+  //   const anchors = await page.$$(
+  //     '.member_colLeft_bottom .jstree-1 .jstree-closed'
+  //   );
+  //   if (anchors.length === 0) {
+  //     break;
+  //   }
+  //   // eslint-disable-next-line no-restricted-syntax
+  //   for (const anchor of anchors) {
+  //     await anchor.click();
+  //     await anchor.click();
+  //   }
+  //   await sleep(200);
+  // }
+  // const departsArr = await page.$$eval(
+  //   '.member_colLeft_bottom .jstree-1 .jstree-anchor',
+  //   (anchors) => {
+  //     return anchors.map((anchor) => [
+  //       anchor.innerText,
+  //       anchor.getAttribute('id').replace('_anchor', '')
+  //     ]);
+  //   }
+  // );
+  // const departs = Object.fromEntries(departsArr);
+  // console.log(`获取所有 ${departsArr.length} 部门 id 完成`);
   await page.click('#menu_contacts');
   await sleep(200);
 
@@ -102,7 +102,7 @@ const main = async () => {
       }
       // 性别
       const womanElm = await page.$('.ww_commonImg_Woman');
-      user.gender = womanElm ? 'F' : 'M';
+      user.gender = womanElm ? '女' : '男';
       // 姓名
       const nameElm = await page.$('.member_display_cover_detail_name');
       const name = await page.evaluate((elm) => elm?.innerText, nameElm);
@@ -129,7 +129,7 @@ const main = async () => {
         for (let i = 0; i < elm.length; i += 1) {
           if ((elm[i].innerText || '').includes('部门')) {
             const text = elm[i].innerText.replace('部门：\t', '').trim();
-            return text.replaceAll(' / ', '/');
+            return text.replaceAll(' / ', '/').split('\n')?.[0] || '';
           }
         }
       });
@@ -166,7 +166,7 @@ const main = async () => {
     }
   }
 
-  exportExcel(users, departs);
+  exportExcel(users);
   process.exit(0);
 };
 
