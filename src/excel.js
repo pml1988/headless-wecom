@@ -14,6 +14,18 @@ function getDepartmentIds(text = '', departments = {}) {
     .join(' \n');
 }
 
+function chunkArr(arr, size) {
+  // 判断如果不是数组(就没有length)，或者size没有传值，size小于1，就返回空数组
+  if (!arr.length || !size || size < 1) return [];
+  let [start, end, result] = [null, null, []];
+  for (let i = 0; i < Math.ceil(arr.length / size); i += 1) {
+    start = i * size;
+    end = start + size;
+    result.push(arr.slice(start, end));
+  }
+  return result;
+}
+
 const fields = [
   {
     key: 'name',
@@ -57,12 +69,12 @@ const fields = [
     label_en: 'org',
     example: ''
   },
-  {
-    key: 'mainDepartment',
-    label: '负责部门',
-    label_en: 'mainDepartment',
-    example: ''
-  },
+  // {
+  //   key: 'mainDepartment',
+  //   label: '负责部门',
+  //   label_en: 'mainDepartment',
+  //   example: ''
+  // },
   {
     key: 'externalId',
     label: '原系统 ID（externalId)',
@@ -95,14 +107,14 @@ const fields = [
   },
   {
     key: 'isLocked',
-    label: '是否锁定账户',
+    label: '账号状态',
     label_en: 'isLocked',
     example: ''
   }
 ].map((x) => x.label);
 
 exports.exportExcel = (users) => {
-  const data = users.map((user) => [
+  const originData = users.map((user) => [
     user.name,
     user.phone ? '+86' : null,
     user.phone ?? null,
@@ -110,46 +122,49 @@ exports.exportExcel = (users) => {
     user.name,
     null,
     user.departments ?? null,
-    user.department_leader ? user.departments : null,
+    // user.department_leader ? user.departments : null,
     user.externalId ?? null,
     user.gender ?? null,
     null,
     null,
     null,
-    '否'
+    '正常'
   ]);
-  data.unshift(
-    [
-      `填写须知：
-  请勿修改表格结构；直接上传该文件。`
-    ],
-    ...Array(13).fill([]),
-    fields
-  );
-  const buffer = xlsx.build([
-    {
-      name: 'mySheetName',
-      data,
-      options: {
-        '!cols': Array(fields.length).fill({ wpx: 80 }),
-        '!merges': [
-          {
-            s: { c: 0, r: 0 },
-            e: { c: 16, r: 13 }
-          }
-        ]
-        // A1: {
-        //   s: {
-        //     alignment: {
-        //       wrapText: true, // 自动换行
-        //       vertical: 'top', // 文字置顶
-        //       horizontal: 'left' // 文字向左对齐
-        //     }
-        //   }
-        // }
+  const data = chunkArr(originData, 1000);
+  for (let i = 0; i < data.length; i += 1) {
+    data[i].unshift(
+      [
+        `填写须知：
+    请勿修改表格结构；直接上传该文件。`
+      ],
+      ...Array(13).fill([]),
+      fields
+    );
+    const buffer = xlsx.build([
+      {
+        name: 'mySheetName',
+        data: data[i],
+        options: {
+          '!cols': Array(fields.length).fill({ wpx: 80 }),
+          '!merges': [
+            {
+              s: { c: 0, r: 0 },
+              e: { c: 16, r: 13 }
+            }
+          ]
+          // A1: {
+          //   s: {
+          //     alignment: {
+          //       wrapText: true, // 自动换行
+          //       vertical: 'top', // 文字置顶
+          //       horizontal: 'left' // 文字向左对齐
+          //     }
+          //   }
+          // }
+        }
       }
-    }
-  ]);
+    ]);
 
-  fs.writeFileSync('output.xlsx', buffer, { flag: 'w' });
+    fs.writeFileSync(`output${i + 1}.xlsx`, buffer, { flag: 'w' });
+  }
 };

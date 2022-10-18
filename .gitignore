@@ -4,6 +4,7 @@ demo/
 globalConfig.json
 users.json
 output.xlsx
+output*.xlsx
 
 # compiled output
 dist/
