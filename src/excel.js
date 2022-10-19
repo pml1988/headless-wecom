@@ -75,12 +75,12 @@ const fields = [
   //   label_en: 'mainDepartment',
   //   example: ''
   // },
-  {
-    key: 'externalId',
-    label: '原系统 ID（externalId)',
-    label_en: 'externalId',
-    example: ''
-  },
+  // {
+  //   key: 'externalId',
+  //   label: '原系统 ID（externalId)',
+  //   label_en: 'externalId',
+  //   example: ''
+  // },
   {
     key: 'gender',
     label: '性别',
@@ -119,11 +119,11 @@ exports.exportExcel = (users) => {
     user.phone ? '+86' : null,
     user.phone ?? null,
     user.email ?? null,
-    user.name,
+    user.externalId ?? null,
     null,
     user.departments ?? null,
     // user.department_leader ? user.departments : null,
-    user.externalId ?? null,
+    // user.externalId ?? null,
     user.gender ?? null,
     null,
     null,
